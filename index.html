@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="description" content="Frank E. P. Bowman, LSM — Professional Corporation" />
+  <title>Frank E. P. Bowman, LSM</title>
+
+  <style>
+    :root{
+      --padX: 60px;
+      --bg-image: url('./frankSiteBG.jpg'); /* overwritten by JS below */
+      --panel-bg: rgba(0,0,0,0.28);
+      --panel-w: min(56vw, 860px);
+      --title-size: clamp(2.7rem, 5vw, 5.7rem);
+      --h2-size: clamp(2.2rem, 3.2vw, 3.4rem);
+      --body-size: 1.02rem;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin: 0;
+      font-family: "Helvetica Neue", Helvetica, Arial, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: #fff;
+      background: #000;
+      overflow: hidden; /* content scrolls inside the panel */
+    }
+
+    /* Background */
+    .bg {
+      position: fixed;
+      inset: 0;
+      background-image: var(--bg-image);
+      background-size: cover;
+      background-position: center;
+      transform: scale(1.02);
+      filter: saturate(1.06) contrast(1.06);
+      z-index: 0;
+    }
+    .bg::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(ellipse at 20% 18%, rgba(0,0,0,0.28), rgba(0,0,0,0.72) 60%, rgba(0,0,0,0.86)),
+        linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.6));
+    }
+
+    .page{
+      position: relative;
+      z-index: 1;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header{
+      padding: 48px var(--padX) 0;
+    }
+    .topbar{
+      display:flex;
+      align-items:flex-end;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    h1{
+      margin: 0;
+      font-size: var(--title-size);
+      font-weight: 200;
+      letter-spacing: 0.01em;
+      line-height: 1.02;
+      text-shadow: 0 10px 35px rgba(0,0,0,0.35);
+      white-space: nowrap;
+    }
+    .icon-links{
+      display:flex;
+      align-items:center;
+      gap: 14px;
+      padding-bottom: 10px; /* visually lines up with the mock */
+    }
+    .icon-links a{
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(255,255,255,0.65);
+      border-radius: 999px;
+      display:grid;
+      place-items:center;
+      color:#fff;
+      text-decoration:none;
+      background: rgba(0,0,0,0.18);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+    .icon-links a:hover{
+      transform: translateY(-1px);
+      background: rgba(0,0,0,0.28);
+      border-color: rgba(255,255,255,0.82);
+    }
+    .divider{
+      margin-top: 16px;
+      height: 1px;
+      background: rgba(255,255,255,0.55);
+    }
+
+    nav.menu{
+      display:flex;
+      align-items:center;
+      flex-wrap: wrap;
+      gap: min(4.2vw, 56px);
+      margin-top: 14px;
+    }
+    nav.menu button{
+      appearance:none;
+      border:0;
+      background: transparent;
+      color:#fff;
+      padding: 0;
+      cursor: pointer;
+      font-size: 0.98rem;
+      letter-spacing: 0.085em;
+      text-transform: uppercase;
+      font-weight: 500;
+      opacity: 0.92;
+      transition: opacity 120ms ease;
+    }
+    nav.menu button:hover{ opacity: 1; }
+    nav.menu button.active{
+      opacity: 1;
+      text-decoration: underline;
+      text-underline-offset: 6px;
+      text-decoration-thickness: 1px;
+    }
+
+    /* Main / Content panel */
+    main{
+      flex: 1;
+      padding: 32px var(--padX) 0;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .content-panel{
+      width: var(--panel-w);
+      background: var(--panel-bg);
+      border-radius: 6px;
+      padding: 26px 26px 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.46);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+
+      overflow: hidden;
+
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+    .content-panel.visible{
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .content-scroll{
+      max-height: calc(100svh - 320px);
+      overflow: auto;
+      padding-right: 16px; /* room for scrollbar */
+      scroll-behavior: smooth;
+      outline: none;
+    }
+
+    /* Scrollbar styling (best-effort across browsers) */
+    .content-scroll{
+      scrollbar-width: thin; /* Firefox */
+      scrollbar-color: rgba(255,255,255,0.55) rgba(255,255,255,0.10);
+    }
+    .content-scroll::-webkit-scrollbar{ width: 10px; }
+    .content-scroll::-webkit-scrollbar-track{
+      background: rgba(255,255,255,0.10);
+      border-radius: 999px;
+    }
+    .content-scroll::-webkit-scrollbar-thumb{
+      background: rgba(255,255,255,0.55);
+      border-radius: 999px;
+    }
+
+    .content-section{ padding-bottom: 8px; }
+    .content-section + .content-section{ padding-top: 28px; }
+
+    .content-section h2{
+      margin: 0 0 10px;
+      font-size: var(--h2-size);
+      font-weight: 800;
+      letter-spacing: 0.005em;
+    }
+    .content-section h3{
+      margin: 20px 0 10px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      opacity: 0.98;
+    }
+
+    p{
+      margin: 0 0 16px;
+      font-size: var(--body-size);
+      line-height: 1.48;
+      max-width: 70ch;
+      text-shadow: 0 10px 30px rgba(0,0,0,0.28);
+    }
+
+    ul{
+      margin: 0 0 16px;
+      padding: 0;
+      list-style: none;
+      max-width: 90ch;
+    }
+    li{
+      margin: 0 0 14px;
+      font-size: var(--body-size);
+      line-height: 1.45;
+      text-shadow: 0 10px 30px rgba(0,0,0,0.28);
+      position: relative;
+      padding-left: 18px;
+    }
+    li::before{
+      content: "•";
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0.95;
+    }
+    li em strong{
+      font-style: italic;
+      font-weight: 800;
+    }
+
+    /* Footer (bottom-right) */
+    .footer{
+      position: fixed;
+      right: var(--padX);
+      bottom: 40px;
+      text-align: right;
+      z-index: 2;
+    }
+    .footer a{
+      color:#fff;
+      text-decoration: none;
+    }
+    .footer a:hover{ text-decoration: underline; text-underline-offset: 6px; }
+    .footer-email{
+      display:inline-block;
+      font-size: clamp(1.55rem, 2.7vw, 2.7rem);
+      font-weight: 650;
+      letter-spacing: 0.01em;
+      text-shadow: 0 14px 40px rgba(0,0,0,0.55);
+    }
+    .footer-corp{
+      margin-top: 6px;
+      font-size: 0.86rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.92;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 860px){
+      :root{ --padX: 18px; --panel-w: 100%; }
+      body{ overflow: hidden; }
+      h1{ white-space: normal; }
+      main{ padding: 22px var(--padX) 0; }
+      .content-panel{ padding: 18px 16px 14px; }
+      .content-scroll{ max-height: calc(100svh - 340px); }
+      .footer{ right: var(--padX); bottom: 22px; }
+      nav.menu{ gap: 18px; }
+      nav.menu button{ font-size: 0.90rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <div class="page">
+    <header>
+      <div class="topbar">
+        <h1>Frank E. P. Bowman, LSM</h1>
+
+        <div class="icon-links" aria-label="Contact links">
+          <!-- Envelope -->
+          <a href="mailto:frank@frankbowmanlaw.ca" aria-label="Email Frank">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M5.5 7.5 12 12.2l6.5-4.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+
+          <!-- LinkedIn -->
+          <a href="https://www.linkedin.com/in/frankbowmanfmc" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
+            <span style="font-weight:800; font-size:14px; letter-spacing:0.02em;">in</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <nav class="menu" aria-label="Sections">
+        <button type="button" data-target="about">About</button>
+        <button type="button" data-target="experience">Experience</button>
+        <button type="button" data-target="recognition">Recognition</button>
+        <button type="button" data-target="insights">Insights</button>
+        <button type="button" data-target="activities">Activities &amp; Affiliations</button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="contentPanel" class="content-panel" hidden>
+        <div class="content-scroll" tabindex="0" aria-label="Page content">
+          <!-- ===== COPY START (from frankSiteAboutCopy.txt) ===== -->
+
+          <section id="about" class="content-section">
+            <h2>About</h2>
+            <p>A seasoned veteran of numerous trials, appeals, administrative hearings, arbitrations and mediations, Frank is a member of Dentons Canada’s insurance litigation team. He is recognized as an expert in Lexpert and Best Lawyers, and in 2014 Frank was awarded the Law Society Medal, the Society’s highest honour for outstanding contribution to the profession.</p>
+            <p>Frank has been a trusted advisor to insurers and other clients for 47 years. He has defended professionals, directors, officers, employees and corporations with respect to claims arising under CGL, E&amp;O, D&amp;O, EPL, product liability, environmental, and other types of coverages.</p>
+            <p>Frank has extensive experience with complex commercial claims and insurance coverage issues, in particular, dealing with directors and officers (D&amp;O) and errors and omissions (E&amp;O) liability claims. Frank has extensive experience in representing and advising corporations, engineers, surveyors, accountants, financial advisers, insurance brokers and real estate brokers in professional liability claims, corporate and commercial litigation, contract disputes, shareholders disputes, corporate governance matters and product liability claims some of which have involved class actions.</p>
+            <p>Frank also has a long history of service to the community and the profession, chairing and leading the organization of Canada’s law school mooting competition, the Gale Cup Moot, for over 30 years. He served on his Toronto neighbourhood residents association for over 15 years, including as president. He also served as legal counsel to a major health care not-for-profit, the Multiple Sclerosis Society of Canada, for 34 years handling and coordinating all of their legal requirements.</p>
+          </section>
+
+          <section id="experience" class="content-section">
+            <h2>Experience</h2>
+            <ul>
+              <li><em><strong>Juliar v. Attorney General</strong></em>: Lead counsel on this case which established for the first time that courts may rectify errors made by accountants and other professional advisers in tax reorganizations and other matters that mistakenly result in unanticipated tax consequence.</li>
+              <li><em><strong>Waxman v. Waxman</strong></em>: Successfully defended auditors named in $50+ million shareholder litigation, two year trial and lengthy appeal, affirming auditor duty of care defence established via Hercules case.</li>
+              <li><em><strong>Polla v. Croatian (Toronto) Credit Union</strong></em>: Lead trial counsel in successful 2018 defence of Board of Directors of Credit Union $5m case brought by investor alleging misrepresentation in Offering Statement.</li>
+              <li><em><strong>11867009 Ontario Inc. v. Gerstein</strong></em>: Represented and ultimately reached multi-party settlement of action against directors, officers, and accountants in multi-million dollar real estate litigation alleging negligence and professional liability.</li>
+              <li><em><strong>Holmes v. Schonfeld</strong></em>: Representing and obtaining dismissal of professional liability litigation against accountants involving complex financial and tax fraud leading to cross-border bankruptcy proceedings.</li>
+              <li><em><strong>Lipson v. Cassels Brock and Blackwell LLP</strong></em>: Lead counsel defending accounting firm in significant class action arising out of complex tax shelter program.</li>
+              <li><em><strong>Boards of Directors</strong></em>: Advising several Boards of Directors and individual directors and officers with respect to their D&amp;O coverage in various potential claim scenarios, including bankruptcies of public companies with statutory and other exposures on directors and officers.</li>
+              <li><em><strong>Coverage opinions</strong></em>: Preparation of numerous coverage opinions for insurers (and to a lesser extent some insureds) relating to various claim scenarios in the context of CGL, environmental, D&amp;O, E&amp;O, EPL and other coverages.</li>
+              <li><em><strong>Defence Counsel</strong></em>: Appointed by numerous insurers over 42 years to defend professionals, directors, officers, employees, corporations, etc. with respect to claims arising under CGL, E&amp;O, D&amp;O, EPL, product liability, environmental, and other types of coverages.</li>
+              <li><em><strong>Cyber coverage</strong></em>: Advised insureds on coverage sought for claims advanced by insured’s arising from cyber attacks.</li>
+            </ul>
+          </section>
+
+          <section id="recognition" class="content-section">
+            <h2>Recognition</h2>
+            <p>First recognized in 2012, Frank has been commended for his extensive knowledge and experience in the following respected publications:</p>
+            <ul>
+              <li>The Best Lawyers in Canada: Corporate and Commercial Litigation; Insurance Law</li>
+              <li>The Canadian Legal Lexpert Directory: Professional Liability</li>
+              <li>Martindale-Hubbell: Distinguished BV Peer Review Rating</li>
+            </ul>
+
+            <h3>Honors and Awards</h3>
+            <ul>
+              <li>Medal recipient, Law Society of Upper Canada 2014</li>
+              <li>Queen Elizabeth II Diamond Jubilee Medal 2012</li>
+            </ul>
+          </section>
+
+          <section id="insights" class="content-section">
+            <h2>Insights</h2>
+            <ul>
+              <li>"Court dismisses statutory misrepresentation claim against credit union board in landmark decision," Dentons Insights, March 29, 2019</li>
+              <li>Co-author, "The Ontario Court of Appeal Provides Guidance on Communications by Counsel With Expert Witnesses," (2015) XVI(2) Professional Liability and Discipline Litigation 974 (Federated Press), V.16 N.2, June 2015</li>
+              <li>Co-author, “Surveyor Error on an R-Plan Corrected by Appeal Court: Getting Around the Rock,” (2013) XV(3) Professional Liability and Discipline Litigation 934 (Federated Press)</li>
+              <li>Co-author, “Correcting Errors in Registered Reference Plans,” (2013) 56(3) Ontario Professional Surveyor Magazine 28</li>
+              <li>Co-author, “Partial Settlement Agreements and Disclosure: When and How Much?,” (2013) VX(2) Professional Liability and Discipline Litigation 922 (Federated Press)</li>
+              <li>Co-author, "The Corporate Identification Doctrine - The Key Element of a Strong Defence for Auditors," Corporate Risk, Vol. XII, No. 4 (Federated Press, 2012), p. 959</li>
+              <li>Lawyers and Auditors: the Circle of Privilege Widens, Professional Liability and Discipline Litigation, Volume XI, No. 3, pages 722-723</li>
+              <li>Favoring Auditor Protection, Corporate Governance Quarterly, Fall 2005, pages 27-28</li>
+              <li>Hercules Wins Round Two, Professional Liability and Discipline Litigation, Volume X, No. 3, pages 664-667</li>
+              <li>Elastic Standard of Care for Accountants Review Engagements, Professional Liability and Discipline Litigation, Volume IX, No. 4, pages 621-623</li>
+              <li>Hercules – Still Fending Off Shareholders in Ontario, Professional Liability and Discipline Litigation, Volume IX, No. 3, pages 607-611</li>
+              <li>The Discovery Action – Can it Be Used Against Professionals?, Professional Liability and Discipline Litigation, Volume IX, No. 1, pages 558-560</li>
+              <li>Favoring Auditor Protection, CA Magazine, September 2004, pages 43-44</li>
+            </ul>
+          </section>
+
+          <section id="activities" class="content-section">
+            <h2>Activities &amp; Affiliations</h2>
+
+            <h3>Activities and Affiliations</h3>
+            <ul>
+              <li>Advocates’ Society, Canadian Bar Association, Toronto Lawyers Club</li>
+            </ul>
+
+            <h3>Community Involvement and Pro Bono</h3>
+            <ul>
+              <li>Multiple Sclerosis Society of Canada, National Legal Counsel and Board of Directors Member 1980-2014</li>
+              <li>Gale Cup Moot Competition (Canadian Mooting Championship), Chairman, Committee Member since 1981-2013</li>
+              <li>York Mills Valley Association, Toronto, Legal advisor and former Director and President 1998-2014</li>
+            </ul>
+
+            <h3>Presentations</h3>
+            <ul>
+              <li>Canadian Insurance Professionals Society – Errors &amp; Omissions Insurance Seminar – Seminar Chair (2006)</li>
+              <li>CA Professional Development Association – Liability Issues for Accountants (2005)</li>
+              <li>CICA Tax Conference – Risky Tax Practice Areas (2005)</li>
+              <li>ADR Institute of Canada – Accounting and Valuation Experts in ADR (2005)</li>
+              <li>Association of Ontario Land Surveyors Annual Meeting – Review of Liability Claims Issues and Prevention Tactics (2005)</li>
+            </ul>
+          </section>
+
+          <!-- ===== COPY END ===== -->
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer" aria-label="Footer contact">
+      <a class="footer-email" href="mailto:frank@frankbowmanlaw.ca">frank@frankbowmanlaw.ca</a>
+      <div class="footer-corp">FRANK E P BOWMAN PROFESSIONAL CORPORATION</div>
+    </footer>
+  </div>
+
+  <script>
+    /****************************************************************
+     * CONFIG: set your background image filename here.
+     * Put the image in the same folder as index.html (GitHub Pages).
+     ****************************************************************/
+    const BACKGROUND_IMAGE = "frankSiteBG.jpg"; // <-- change this
+
+    // Apply background
+    document.documentElement.style.setProperty("--bg-image", `url('${BACKGROUND_IMAGE}')`);
+
+    const panel = document.getElementById("contentPanel");
+    const menuButtons = Array.from(document.querySelectorAll("nav.menu button"));
+
+    function setActive(targetId){
+      menuButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.target === targetId));
+    }
+
+    function showPanel(){
+      if (!panel.hidden) return;
+      panel.hidden = false;
+      // next frame so transitions fire
+      requestAnimationFrame(() => panel.classList.add("visible"));
+    }
+
+    function scrollToSection(targetId){
+      const el = document.getElementById(targetId);
+      if (!el) return;
+      // scrollIntoView will scroll the nearest scrollable ancestor (the panel)
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function go(targetId, {pushHash=true} = {}){
+      showPanel();
+      setActive(targetId);
+
+      // small delay ensures the panel is visible before snapping/scrolling
+      setTimeout(() => scrollToSection(targetId), 40);
+
+      if (pushHash) history.replaceState(null, "", `#${targetId}`);
+    }
+
+    menuButtons.forEach(btn => {
+      btn.addEventListener("click", () => go(btn.dataset.target));
+    });
+
+    // Deep-link support: load with #about, #experience, etc.
+    window.addEventListener("DOMContentLoaded", () => {
+      const hash = (location.hash || "").replace("#", "").trim();
+      const allowed = new Set(["about", "experience", "recognition", "insights", "activities"]);
+      if (allowed.has(hash)) {
+        go(hash, {pushHash:false});
+      }
+    });
+  </script>
+</body>
+</html>
