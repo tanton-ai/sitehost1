@@ -613,7 +613,11 @@
       if (allowed.has(hash)) {
         go(hash, {pushHash:false});
       }
+      if (isMobile()){
+        go("about", {pushHash:false}); // mobile default
+      }
     });
   </script>
 </body>
 </html>
+
