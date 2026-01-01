@@ -266,17 +266,74 @@
     }
 
     /* Mobile adjustments */
-    @media (max-width: 860px){
-      :root{ --padX: 18px; --panel-w: 100%; }
-      body{ overflow: hidden; }
-      h1{ white-space: normal; }
-      main{ padding: 22px var(--padX) 0; }
-      .content-panel{ padding: 18px 16px 14px; }
-      .content-scroll{ max-height: calc(100svh - 340px); }
-      .footer{ right: var(--padX); bottom: 22px; }
-      nav.menu{ gap: 18px; }
-      nav.menu button{ font-size: 0.90rem; }
-    }
+	@media (max-width: 860px){
+	  :root{
+		--padX: 18px;
+		--panel-w: 100%;
+
+		/* Make the hero title + copy scale appropriately on phones */
+		--title-size: clamp(2.1rem, 10.5vw, 3.4rem);
+		--h2-size: clamp(1.75rem, 7.2vw, 2.4rem);
+		--body-size: 0.98rem;
+	  }
+
+	  body{ overflow: hidden; }
+
+	  header{
+		padding: calc(22px + env(safe-area-inset-top)) var(--padX) 0;
+	  }
+
+	  .topbar{
+		align-items: flex-start;
+		flex-direction: column;
+		gap: 14px;
+	  }
+
+	  .icon-links{
+		padding-bottom: 0;
+		align-self: flex-end;
+	  }
+
+	  h1{
+		white-space: normal;
+		line-height: 1.05;
+	  }
+
+	  nav.menu{
+		gap: 14px 22px;
+	  }
+	  nav.menu button{
+		font-size: 0.90rem;
+		letter-spacing: 0.07em;
+	  }
+
+	  main{ padding: 18px var(--padX) 0; }
+	  .content-panel{ padding: 16px 14px 12px; }
+
+	  /* More realistic available height on phones (header+footer are taller there) */
+	  .content-scroll{ max-height: calc(100svh - 360px); }
+
+	  /* Prevent the footer email from being cut off */
+	  .footer{
+		left: var(--padX);
+		right: var(--padX);
+		bottom: calc(18px + env(safe-area-inset-bottom));
+		text-align: left;
+	  }
+
+	  .footer-email{
+		font-size: clamp(1.1rem, 5.8vw, 1.65rem);
+		overflow-wrap: anywhere;  /* allows breaking long email */
+		word-break: break-word;
+	  }
+
+	  .footer-corp{
+		font-size: 0.74rem;
+		letter-spacing: 0.10em;
+		line-height: 1.2;
+	  }
+	}
+
   </style>
 </head>
 
