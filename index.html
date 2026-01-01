@@ -105,11 +105,36 @@
     }
 
     nav.menu{
+      margin-top: 14px;
+    }
+    nav.menu .menu-desktop{
       display:flex;
       align-items:center;
       flex-wrap: wrap;
       gap: min(4.2vw, 56px);
-      margin-top: 14px;
+    }
+    nav.menu .menu-mobile{
+      display:none;
+      width: 100%;
+    }
+    nav.menu select{
+      width: 100%;
+      max-width: 520px;
+      padding: 12px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.55);
+      background: rgba(0,0,0,0.22);
+      color: #fff;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 600;
+      outline: none;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    nav.menu select option{
+      background: #111;
+      color: #fff;
     }
     nav.menu button{
       appearance:none;
@@ -266,74 +291,86 @@
     }
 
     /* Mobile adjustments */
-	@media (max-width: 860px){
-	  :root{
-		--padX: 18px;
-		--panel-w: 100%;
+    @media (max-width: 860px){
+      :root{
+        --padX: 18px;
+        --panel-w: 100%;
 
-		/* Make the hero title + copy scale appropriately on phones */
-		--title-size: clamp(2.1rem, 10.5vw, 3.4rem);
-		--h2-size: clamp(1.75rem, 7.2vw, 2.4rem);
-		--body-size: 0.98rem;
-	  }
+        /* Smaller body copy on mobile */
+        --body-size: 0.90rem;
 
-	  body{ overflow: hidden; }
+        /* Base mobile typography (title will be auto-fit by JS as well) */
+        --title-size: 2.6rem;
+        --h2-size: clamp(1.65rem, 7.0vw, 2.35rem);
+      }
 
-	  header{
-		padding: calc(22px + env(safe-area-inset-top)) var(--padX) 0;
-	  }
+      body{ overflow: hidden; }
 
-	  .topbar{
-		align-items: flex-start;
-		flex-direction: column;
-		gap: 14px;
-	  }
+      header{
+        padding: calc(22px + env(safe-area-inset-top)) var(--padX) 0;
+      }
 
-	  .icon-links{
-		padding-bottom: 0;
-		align-self: flex-end;
-	  }
+      /* Give the title full-width (icons below / right) */
+      .topbar{
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .icon-links{
+        padding-bottom: 0;
+        align-self: flex-end;
+      }
 
-	  h1{
-		white-space: normal;
-		line-height: 1.05;
-	  }
+      h1{
+        white-space: nowrap; /* requirement: never wrap */
+        line-height: 1.05;
+        letter-spacing: 0.005em;
+        max-width: 100%;
+        overflow: hidden;
+      }
 
-	  nav.menu{
-		gap: 14px 22px;
-	  }
-	  nav.menu button{
-		font-size: 0.90rem;
-		letter-spacing: 0.07em;
-	  }
+      /* Replace 5-item menu with dropdown */
+      nav.menu .menu-desktop{ display:none; }
+      nav.menu .menu-mobile{ display:block; }
+      nav.menu select{
+        font-size: 0.92rem;
+      }
 
-	  main{ padding: 18px var(--padX) 0; }
-	  .content-panel{ padding: 16px 14px 12px; }
+      main{
+        padding: 18px var(--padX) 0;
+        padding-bottom: 150px; /* reserve space so panel never intersects footer */
+      }
 
-	  /* More realistic available height on phones (header+footer are taller there) */
-	  .content-scroll{ max-height: calc(100svh - 360px); }
+      .content-panel{
+        padding: 16px 14px 12px;
+        width: 100%;
+        margin-bottom: 110px;
+      }
 
-	  /* Prevent the footer email from being cut off */
-	  .footer{
-		left: var(--padX);
-		right: var(--padX);
-		bottom: calc(18px + env(safe-area-inset-bottom));
-		text-align: left;
-	  }
+      /* Reserve extra space for fixed footer */
+      .content-scroll{
+        max-height: calc(100svh - 440px);
+        padding-right: 12px;
+      }
 
-	  .footer-email{
-		font-size: clamp(1.1rem, 5.8vw, 1.65rem);
-		overflow-wrap: anywhere;  /* allows breaking long email */
-		word-break: break-word;
-	  }
-
-	  .footer-corp{
-		font-size: 0.74rem;
-		letter-spacing: 0.10em;
-		line-height: 1.2;
-	  }
-	}
-
+      /* Footer: ensure readable + never overlaps panel */
+      .footer{
+        left: var(--padX);
+        right: var(--padX);
+        bottom: calc(18px + env(safe-area-inset-bottom));
+        text-align: left;
+      }
+      .footer-email{
+        font-size: clamp(1.05rem, 5.3vw, 1.55rem);
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+      .footer-corp{
+        font-size: 0.74rem;
+        letter-spacing: 0.10em;
+        line-height: 1.2;
+      }
+    }
   </style>
 </head>
 
@@ -364,11 +401,26 @@
       <div class="divider"></div>
 
       <nav class="menu" aria-label="Sections">
-        <button type="button" data-target="about">About</button>
-        <button type="button" data-target="experience">Experience</button>
-        <button type="button" data-target="recognition">Recognition</button>
-        <button type="button" data-target="insights">Insights</button>
-        <button type="button" data-target="activities">Activities &amp; Affiliations</button>
+        <!-- Desktop menu -->
+        <div class="menu-desktop" role="navigation" aria-label="Section links">
+          <button type="button" data-target="about">About</button>
+          <button type="button" data-target="experience">Experience</button>
+          <button type="button" data-target="recognition">Recognition</button>
+          <button type="button" data-target="insights">Insights</button>
+          <button type="button" data-target="activities">Activities &amp; Affiliations</button>
+        </div>
+
+        <!-- Mobile dropdown -->
+        <div class="menu-mobile" aria-label="Section dropdown">
+          <select id="sectionSelect">
+            <option value="" selected disabled>Select a section…</option>
+            <option value="about">About</option>
+            <option value="experience">Experience</option>
+            <option value="recognition">Recognition</option>
+            <option value="insights">Insights</option>
+            <option value="activities">Activities &amp; Affiliations</option>
+          </select>
+        </div>
       </nav>
     </header>
 
@@ -484,9 +536,34 @@
 
     const panel = document.getElementById("contentPanel");
     const menuButtons = Array.from(document.querySelectorAll("nav.menu button"));
+    const sectionSelect = document.getElementById("sectionSelect");
+    const titleEl = document.querySelector("h1");
+
+    function fitTitleToOneLine(){
+      // Mobile only: shrink title until it fits on a single line (no wrap / no bleed).
+      if (!titleEl) return;
+
+      // Reset to CSS size first
+      titleEl.style.fontSize = "";
+      if (!window.matchMedia("(max-width: 860px)").matches) return;
+
+      titleEl.style.whiteSpace = "nowrap";
+
+      const minPx = 18; // safety floor
+      let size = parseFloat(getComputedStyle(titleEl).fontSize);
+      let guard = 0;
+
+      // Reduce until the rendered text fits within the element box
+      while (titleEl.scrollWidth > titleEl.clientWidth && size > minPx && guard < 48){
+        size -= 1;
+        titleEl.style.fontSize = size + "px";
+        guard++;
+      }
+    }
 
     function setActive(targetId){
       menuButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.target === targetId));
+      if (sectionSelect) sectionSelect.value = targetId;
     }
 
     function showPanel(){
@@ -517,8 +594,20 @@
       btn.addEventListener("click", () => go(btn.dataset.target));
     });
 
+    if (sectionSelect){
+      sectionSelect.addEventListener("change", () => {
+        const v = sectionSelect.value;
+        if (v) go(v);
+      });
+    }
+
+    window.addEventListener("resize", () => {
+      fitTitleToOneLine();
+    });
+
     // Deep-link support: load with #about, #experience, etc.
     window.addEventListener("DOMContentLoaded", () => {
+      fitTitleToOneLine();
       const hash = (location.hash || "").replace("#", "").trim();
       const allowed = new Set(["about", "experience", "recognition", "insights", "activities"]);
       if (allowed.has(hash)) {
